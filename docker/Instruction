@@ -1,0 +1,53 @@
+1. Как пользоваться контейнером
+    1.1# Поставить docker
+        sudo apt-get update
+        sudo apt-get install ca-certificates curl gnupg lsb-release
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        sudo apt-get update
+        sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+
+        # Добавим текущего пользователя в docker group:
+        sudo groupadd docker
+        sudo usermod -aG docker $USER
+
+        # Скачиваем, запуксаем убунту и печатаем Привет Мир
+        docker run debian echo "Hello World"
+
+    1.2# скачать образ (ну тут сслыки не будет. только за классы)
+    1.3# загрузить образ в docker
+        docker load --input <path_to_tar_file>
+            (наш контейнер называется build-qt)
+
+       # после загрузки проверяем, что наш образ на месте:
+
+        docker images
+            (должны быть как миниму два образа - Hello World и build-qt)
+
+       # загружаем образ в интерактивном режиме (т.е. он как виртуалка)
+       # кроме этого монтируем папку, казанную в переменной APP в путь :/app в контейнере (монтирую например папку с исходниками получаем к ним доступ в контейнере без лишних копирований)
+       # так же указываем /bin/bash как старотовую команду контейнера, для получения доступа в консоль
+
+        sudo docker run --interactive --tty --rm -v $APP:/app build-qt /bin/bash
+
+       # в образе установлен кросс-компилятор под арч 64 и наше собранная кросскомпиляция qt -> проект собирается qmake make если вручную
+        exit -  выход из контейнера
+
+    1.4 # настройка docker-device в QtCreator как устройство сборки
+        необходимо загрузить и включить плагин docker в списке плагинов кретора
+
+        Edit->Preferences->Devices->Add...->Docker device->(выбираем наш контейнер)
+        В окне настроек контейнера ничего не трогаем -> там по умолчаниею для нас всё норм. можно даже отключить интернет для контейнера.
+        Можно только нажать Auto-search kit items и проверить что компилятори исборка qt найдены
+
+        по итогу долден в версия qt отобразиться qt из докера.
+
+    1.5 #Настраиваем комплект сборки
+        по аналогии с настройкой комплект для обысной сборки
+        выбираем build device type --- docker
+        если контейнер один - встанет автоматом, если нет - выбираем в buid device нужный контейнер
+        выбираем run device type --- remote linux device
+        если устройство одно - встанет автоматом, если нет - выбираем нужное
+        готово.
+        разве что собирается медленнее
